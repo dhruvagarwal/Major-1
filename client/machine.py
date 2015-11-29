@@ -1,3 +1,5 @@
+import json
+
 from .exceptions import NoEndpointSpecified
 from .state import State
 
@@ -16,15 +18,31 @@ class Machine(object):
         if slug:
             self.slug = slug
 
-    def get_state(self):
-        return self.state.get_state()
+    def get_info(self):
+        state = self.state.get_state()
+        # json of all the data(state, services, process)
+        return {
+                'state': state,
+            }
 
     def __str__(self):
         return self.slug
 
-    def sync_system(self):
+    def update_info(self):
         # completely temporary function
 
         self.state.update()
         # self.update_services()
         # self.update_processes()
+
+
+def get_this_machine():
+    config = open('config.json').read()
+    config = json.loads(config)
+
+    endpoint = config.get('endpoint', '')
+    slug = config.get('slug', '')
+
+    machine = Machine(endpoint=endpoint, slug=slug)
+
+    return machine
