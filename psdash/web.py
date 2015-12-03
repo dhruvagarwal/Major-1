@@ -126,6 +126,7 @@ def index():
 
     return render_template('index.html', **data)
 
+
 @webapp.route('/api/')
 def api_index():
     sysinfo = current_service.get_sysinfo()
@@ -184,19 +185,19 @@ def processes(sort='pid', order='asc', filter='user'):
 @webapp.route('/api/processes/<string:sort>/<string:order>/<string:filter>')
 def api_processes(sort='pid', order='asc', filter='user'):
     procs = current_service.get_process_list()
-    num_procs = len(procs)
+    # num_procs = len(procs)
 
-    user_procs = [p for p in procs if p['user'] != 'root']
-    num_user_procs = len(user_procs)
-    if filter == 'user':
-        procs = user_procs
+    # user_procs = [p for p in procs if p['user'] != 'root']
+    # num_user_procs = len(user_procs)
+    # if filter == 'user':
+    #     procs = user_procs
 
-    procs.sort(
-        key=lambda x: x.get(sort),
-        reverse=True if order != 'asc' else False
-    )
+    # procs.sort(
+    #     key=lambda x: x.get(sort),
+    #     reverse=True if order != 'asc' else False
+    # )
 
-    return jsonify(procs)
+    return jsonify({'processes': procs})
 
 @webapp.route('/process/<int:pid>', defaults={'section': 'overview'})
 @webapp.route('/process/<int:pid>/<string:section>')
