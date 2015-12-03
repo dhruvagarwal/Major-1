@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <script language="javascript" type="text/javascript"  src="jquery-1.6.1.min.js"></script>
+        <script language="javascript" type="text/javascript" src="arbor.js" ></script>
+        <script language="javascript" type="text/javascript" src="graphics.js" ></script>
+        <script language="javascript" type="text/javascript" src="renderer.js" ></script>
+    </head>
+    <body>
+      <div id="draw">
+        <canvas id="viewport" width="800" height="600"></canvas>
+      </div>
+      <script language="javascript" type="text/javascript">
+            var sys = arbor.ParticleSystem(1000, 400,1);
+            sys.parameters({gravity:false});
+            sys.renderer = Renderer("#viewport") ;
+            var data = {
+               nodes:{
+                 A:{'color':'red','shape':'dot','label':'A'},
+                 B:{'color':'green','shape':'dot','label':'B'},
+                 C:{'color':'blue','shape':'dot','label':'C'}
+               }, 
+               edges:{
+                 A:{ B:{}, C:{} }
+               }
+             };
+            sys.graft(data);
+      </script>
+    </body>
+</html>
