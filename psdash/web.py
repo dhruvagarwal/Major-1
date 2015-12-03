@@ -32,8 +32,7 @@ def fromtimestamp(value, dateformat='%Y-%m-%d %H:%M:%S'):
 
 @webapp.context_processor
 def inject_nodes():
-    for key, value in current_app.psdash.get_nodes().iteritems():
-        print key, value.name
+    
     return {"current_node": current_node, "nodes": current_app.psdash.get_nodes()}
 
 
@@ -127,6 +126,27 @@ def index():
 
     return render_template('index.html', **data)
 
+@webapp.route('/api/')
+def api_index():
+    sysinfo = current_service.get_sysinfo()
+
+    netifs = current_service.get_network_interfaces().values()
+    netifs.sort(key=lambda x: x.get('bytes_sent'), reverse=True)
+
+    data = {
+        'load_avg': sysinfo['load_avg'],
+        'num_cpus': sysinfo['num_cpus'],
+        'memory': current_service.get_memory(),
+        'swap': current_service.get_swap_space(),
+        'disks': current_service.get_disks(),
+        'cpu': current_service.get_cpu(),
+        'users': current_service.get_users(),
+        'net_interfaces': netifs,
+        'page': 'overview',
+        'is_xhr': request.is_xhr
+    }
+
+    return jsonify(data)
 
 @webapp.route('/processes', defaults={'sort': 'cpu_percent', 'order': 'desc', 'filter': 'user'})
 @webapp.route('/processes/<string:sort>')
@@ -158,6 +178,25 @@ def processes(sort='pid', order='asc', filter='user'):
         is_xhr=request.is_xhr
     )
 
+@webapp.route('/api/processes', defaults={'sort': 'cpu_percent', 'order': 'desc', 'filter': 'user'})
+@webapp.route('/api/processes/<string:sort>')
+@webapp.route('/api/processes/<string:sort>/<string:order>')
+@webapp.route('/api/processes/<string:sort>/<string:order>/<string:filter>')
+def api_processes(sort='pid', order='asc', filter='user'):
+    procs = current_service.get_process_list()
+    num_procs = len(procs)
+
+    user_procs = [p for p in procs if p['user'] != 'root']
+    num_user_procs = len(user_procs)
+    if filter == 'user':
+        procs = user_procs
+
+    procs.sort(
+        key=lambda x: x.get(sort),
+        reverse=True if order != 'asc' else False
+    )
+
+    return jsonify(procs)
 
 @webapp.route('/process/<int:pid>', defaults={'section': 'overview'})
 @webapp.route('/process/<int:pid>/<string:section>')
@@ -211,6 +250,41 @@ def process(pid, section):
         **context
     )
 
+
+@webapp.route('/api/process/<int:pid>')
+def api_process(pid):
+    valid_sections = [
+        'overview',
+        'threads',
+        'files',
+        'connections',
+        'memory',
+        'environment',
+        'children',
+        'limits'
+    ]
+
+    context = {
+        'process': current_service.get_process(pid),
+    }
+
+    
+    penviron = current_service.get_process_environment(pid)
+
+    whitelist = current_app.config.get('PSDASH_ENVIRON_WHITELIST')
+    if whitelist:
+        penviron = dict((k, v if k in whitelist else '*hidden by whitelist*') 
+                         for k, v in penviron.iteritems())
+
+    context['process_environ'] = penviron
+    context['threads'] = current_service.get_process_threads(pid)
+    context['files'] = current_service.get_process_open_files(pid)
+    context['connections'] = current_service.get_process_connections(pid)
+    context['memory_maps'] = current_service.get_process_memory_maps(pid)
+    context['children'] = current_service.get_process_children(pid)
+    context['limits'] = current_service.get_process_limits(pid)
+
+    return jsonify(context)
 
 @webapp.route('/network')
 def view_networks():
@@ -274,6 +348,18 @@ def view_disks():
         is_xhr=request.is_xhr
     )
 
+@webapp.route('/api/disks')
+def api_view_disks():
+    disks = current_service.get_disks(all_partitions=True)
+    io_counters = current_service.get_disks_counters().items()
+    io_counters.sort(key=lambda x: x[1]['read_count'], reverse=True)
+    
+    response = {
+        'disks' : disks,
+        'io_counters' : io_counters
+    }
+
+    return jsonify(response)
 
 @webapp.route('/logs')
 def view_logs():
@@ -329,3 +415,15 @@ def register_node():
 
     current_app.psdash.register_node(name, host, port)
     return jsonify({'status': 'OK'})
+
+@webapp.route('/api/nodes')
+def api_nodes():
+    response = { 'nodes' : []}
+    for key, value in current_app.psdash.get_nodes().iteritems():
+        node = {
+            'name' : value.name,
+            'id': key
+        }
+        response['nodes'].append(node)
+
+    return jsonify(response)
