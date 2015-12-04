@@ -59,10 +59,8 @@ $(function() {
         $('#steps').stop().animate({
             marginLeft: '-' + widths[current-1] + 'px'
         },500,function(){
-			if(current == fieldsetCount)
-				validateSteps();
-			else
-				validateStep(prev);
+			
+
 			$('#formElem').children(':nth-child('+ parseInt(current) +')').find(':input:first').focus();	
 		});
         e.preventDefault();

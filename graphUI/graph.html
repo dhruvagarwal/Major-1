@@ -39,7 +39,7 @@
             <h1>Graph controls</h1>
             <div id="wrapper">
                 <div id="steps">
-                    <form id="formElem" name="formElem" action="" method="post">
+                    <form id="formElem" name="formElem" >
                         <fieldset class="step">
                             <legend>Add Edges</legend>
                             <p>
@@ -56,7 +56,7 @@
                                 <input id="node" name="node" type="text"  />
                             </p>
                             <p class="submit">
-                                <button id="remButton" type="submit">Remove</button>
+                                <button type="button" onclick='rem(); return false;'id="remButton">Remove</button>
                             </p>
                         </fieldset>
                         <fieldset class="step">
@@ -74,7 +74,7 @@
                                 <input id="weight" name="weight"  />
                             </p>
                             <p class="submit">
-                                <button id="weightButton" type="submit">Adjust</button>
+                                <button id="weightButton">Adjust</button>
                             </p>
                         </fieldset>
                         <fieldset class="step">
@@ -133,21 +133,38 @@
              }
            };
           sys.graft(data);
+           function add(source, target, weight){
+            source = sys.getNode(source)? sys.getNode(source):sys.addNode(source,{'color':'red','shape':'dot','label':source});
+            target = sys.getNode(target)? sys.getNode(target):sys.addNode(target,{'color':'red','shape':'dot','label':target});
+            sys.addEdge(source,target,{weight:weight});
+           }
           var area = document.querySelector('#edges');
           area.value = "" ;
+          var source = ""; 
+          var target = "";
+          var weight = ""; 
+
           if (area.addEventListener) {
             area.addEventListener('input', function(e) {
-              var lines = this.value.split('\n');
+              var lines = this.value.trim().split('\n');
               for(var i =0; i<lines.length; i++){
-                  var source = lines[i].split(' ')[0];
-                   var target = lines[i].split(' ')[1];
-                   var weight = lines[i].split(' ')[2];
+                   source = lines[i].split(' ')[0];
+                    target = lines[i].split(' ')[1];
+                    weight = lines[i].split(' ')[2];
                    console.log(source+" "+target+' '+weight);
               }
-              sys.addEdge(source,target,{weight:weight});
+              if(source && target && weight){
+                add(source, target, weight);
+              }
+             
               // event handling code for sane browsers
             }, false);
           } 
+          
+          function rem(){
+            var label = document.getElementById('node').value.trim() ;
+            sys.pruneNode(sys.getNode(label));
+          }
         </script>>
        
     </body>
