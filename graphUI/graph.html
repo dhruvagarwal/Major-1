@@ -4,26 +4,151 @@
         <script language="javascript" type="text/javascript" src="arbor.js" ></script>
         <script language="javascript" type="text/javascript" src="graphics.js" ></script>
         <script language="javascript" type="text/javascript" src="renderer.js" ></script>
+         <link rel="stylesheet" href="../form/css/style.css" type="text/css" media="screen"/>
+        <script type="text/javascript" src="../form/sliding.form.js"></script>
     </head>
+    <style>
+        span.reference{
+            position:fixed;
+            left:5px;
+            top:5px;
+            font-size:10px;
+            text-shadow:1px 1px 1px #fff;
+        }
+        span.reference a{
+            color:#555;
+            text-decoration:none;
+      text-transform:uppercase;
+        }
+        span.reference a:hover{
+            color:#000;
+            
+        }
+        h1{
+            color:#ccc;
+            font-size:36px;
+            text-shadow:1px 1px 1px #fff;
+            padding:20px;
+        }
+    </style>
     <body>
       <div id="draw">
-        <canvas id="viewport" width="800" height="600"></canvas>
+        <canvas id="viewport" width="400" height="400"></canvas>
       </div>
-      <script language="javascript" type="text/javascript">
-            var sys = arbor.ParticleSystem(1000, 400,1);
-            sys.parameters({gravity:false});
-            sys.renderer = Renderer("#viewport") ;
-            var data = {
-               nodes:{
-                 A:{'color':'red','shape':'dot','label':'A'},
-                 B:{'color':'green','shape':'dot','label':'B'},
-                 C:{'color':'blue','shape':'dot','label':'C'}
-               }, 
-               edges:{
-                 A:{ B:{}, C:{} }
-               }
-             };
-            sys.graft(data);
-      </script>
+       <div id="content">
+            <h1>Graph controls</h1>
+            <div id="wrapper">
+                <div id="steps">
+                    <form id="formElem" name="formElem" action="" method="post">
+                        <fieldset class="step">
+                            <legend>Add Edges</legend>
+                            <p>
+                                <label for="Edges">Edges</label>
+                                <textarea rows='5' cols='20'id="edges" name="edges" value=''>
+                                </textarea>
+                            </p>
+                            
+                        </fieldset>
+                        <fieldset class="step">
+                            <legend>Remove a node</legend>
+                            <p>
+                                <label for="node">Node Label</label>
+                                <input id="node" name="node" type="text"  />
+                            </p>
+                            <p class="submit">
+                                <button id="remButton" type="submit">Remove</button>
+                            </p>
+                        </fieldset>
+                        <fieldset class="step">
+                             <legend>Change Weight</legend>
+                            <p>
+                                <label for="from">Source Node</label>
+                                <input id="source" name="source"  />
+                            </p>
+                           <p>
+                                <label for="to">Target Node</label>
+                                <input id="target" name="target"  />
+                            </p>
+                           <p>
+                                <label for="weight">New Weight</label>
+                                <input id="weight" name="weight"  />
+                            </p>
+                            <p class="submit">
+                                <button id="weightButton" type="submit">Adjust</button>
+                            </p>
+                        </fieldset>
+                        <fieldset class="step">
+                            <legend>Settings</legend>
+                            <p>
+                                <label for="newsletter">Newsletter</label>
+                                <select id="newsletter" name="newsletter">
+                                    <option value="Daily" selected>Daily</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Never">Never</option>
+                                </select>
+                            </p>
+                            <p>
+                                <label for="updates">Updates</label>
+                                <select id="updates" name="updates">
+                                    <option value="1" selected>Package 1</option>
+                                    <option value="2">Package 2</option>
+                                    <option value="0">Don't send updates</option>
+                                </select>
+                            </p>
+              <p>
+                                <label for="tagname">Newsletter Tag</label>
+                                <input id="tagname" name="tagname" type="text"  />
+                            </p>
+                        </fieldset>
+                    </form>
+                </div>
+                <div id="navigation" style="display:none;">
+                    <ul>
+                        <li class="selected">
+                            <a href="#">Edges</a>
+                        </li>
+                        <li>
+                            <a href="#">Remove a node</a>
+                        </li>
+                        <li>
+                            <a href="#">Adjust Weight</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+          var sys = arbor.ParticleSystem(1000, 400,1);
+          sys.parameters({gravity:false});
+          sys.renderer = Renderer("#viewport") ;
+          var data = {
+             nodes:{
+               A:{'color':'red','shape':'dot','label':'A'},
+               B:{'color':'green','shape':'dot','label':'B'},
+               C:{'color':'blue','shape':'dot','label':'C'}
+             }, 
+             edges:{
+               A:{ B:{}, C:{} }
+             }
+           };
+          sys.graft(data);
+          var area = document.querySelector('#edges');
+          area.value = "" ;
+          if (area.addEventListener) {
+            area.addEventListener('input', function(e) {
+              var lines = this.value.split('\n');
+              for(var i =0; i<lines.length; i++){
+                  var source = lines[i].split(' ')[0];
+                   var target = lines[i].split(' ')[1];
+                   var weight = lines[i].split(' ')[2];
+                   console.log(source+" "+target+' '+weight);
+              }
+              sys.addEdge(source,target,{weight:weight});
+              // event handling code for sane browsers
+            }, false);
+          } 
+        </script>>
+       
     </body>
 </html>
